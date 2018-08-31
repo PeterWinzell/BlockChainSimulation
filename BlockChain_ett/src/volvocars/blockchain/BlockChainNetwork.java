@@ -28,6 +28,7 @@ public class BlockChainNetwork implements BroadCastListener {
     public BlockChainNetwork(int networkNodes){
         this.networkNodes = networkNodes;
         
+        travlisteners = new ArrayList<>();
         nodes = new ArrayList<>(networkNodes);
         forgers = new ArrayList<>();
         edgeMatrix = new boolean [networkNodes][networkNodes];
@@ -43,13 +44,18 @@ public class BlockChainNetwork implements BroadCastListener {
         }    
     }
     
-    private void falsify_visited(){
+    public void falsify_visited(){
         for(int i = 0; i < visited.length; i++)
             visited[i] = false;
     }
     
-    public void initNetwork(){
-        
+    public void initNetwork(int width, int height){
+        // give the network nodes a representation in the 2D plane.
+        for (int i = 0 ; i < networkNodes; i++){
+            BlockChainNode bNode = nodes.get(i);
+            bNode.setX((int)  Math.ceil(Math.random() * width));
+            bNode.setY( (int) Math.ceil(Math.random() * height));
+        }
     }
     
     private boolean isForger(){

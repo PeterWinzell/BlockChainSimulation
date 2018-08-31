@@ -28,21 +28,33 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
 
     private Canvas canvas;
     private BlockChainNetwork blockChainNetwork;
-
+    private int height = 800;
+    private int width = 1000;
+    
+    private BlockChainNode prevNode = null;
+    
     @Override
     public void start(Stage primaryStage) {
-        blockChainNetwork = new BlockChainNetwork(10);
+        
+        // bug ...
+        final boolean resizable = primaryStage.isResizable();
+        primaryStage.setResizable(!resizable);
+        primaryStage.setResizable(resizable);
+        
+        
+        blockChainNetwork = new BlockChainNetwork(20);
         
         Pane wrapperPane = new Pane();
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(wrapperPane);
-
+        
+        
         primaryStage.setTitle("Drawing Operations Test");
 
         Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
         System.out.println(" xres: " + primaryScreenBounds.getMaxX() + " yres: " + primaryScreenBounds.getMaxY());
         
-        canvas = new Canvas(300, 250);
+        canvas = new Canvas(width, height);
         // Put canvas in the center of the window
         wrapperPane.getChildren().add(canvas);
         
@@ -55,9 +67,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         canvas.widthProperty().addListener(event -> drawShapes(canvas));
         canvas.heightProperty().addListener(event -> drawShapes(canvas));
      
-
+        blockChainNetwork.initNetwork(width, height);
+        blockChainNetwork.addTraverseListener(this);
         
-        primaryStage.setScene(new Scene(borderPane));
+        primaryStage.setScene(new Scene(borderPane,width,height));
         primaryStage.show();
         
 
@@ -66,32 +79,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private void drawShapes(Canvas canvas) {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        
-        System.out.println(canvas.getHeight());
-        System.out.println(canvas.getWidth());
-        /*gc.setFill(Color.GREEN);
-        gc.setStroke(Color.BLUE);
-
-        gc.setLineWidth(5);
-        gc.strokeLine(40, 10, 10, 40);
-        gc.fillOval(10, 60, 30, 30);
-        gc.strokeOval(60, 60, 30, 30);
-        gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-        gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-
-        gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-        gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-        gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-        gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-        gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-        gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-
-        gc.fillPolygon(new double[]{10, 40, 10, 40},
-                new double[]{210, 210, 240, 240}, 4);
-        gc.strokePolygon(new double[]{60, 90, 60, 90},
-                new double[]{210, 210, 240, 240}, 4);
-        gc.strokePolyline(new double[]{110, 140, 110, 140},
-                new double[]{210, 210, 240, 240}, 4);*/
+        blockChainNetwork.depthFirstSearch(0);
+        gc.stroke();
+        blockChainNetwork.falsify_visited();
+        prevNode = null;
+          
     }
 
     /**
@@ -104,6 +96,27 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     @Override
     public void apply(BlockChainNode aNode) {
         
+       GraphicsContext gc = canvas.getGraphicsContext2D();
+       
+       int x = aNode.getX();
+       int y = aNode.getY();
+       
+       gc.setFill(Color.BLACK);
+       gc.fillOval(x - 10.0,y-10.0,10.0,10.0);
+       
+       //drawEdge
+       if (prevNode == null){
+            prevNode = aNode;
+       }
+       else{
+           int x2 = prevNode.getX();
+           int y2 = prevNode.getY();
+           gc.setStroke(Color.RED);
+           gc.moveTo(x2-5, y2-5);
+           gc.lineTo(x-5, y-5);
+           prevNode = aNode;
+       }
+       
     }
 
 }
