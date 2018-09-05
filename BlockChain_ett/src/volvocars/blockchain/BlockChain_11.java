@@ -5,10 +5,15 @@
  */
 package volvocars.blockchain;
 
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import javafx.scene.paint.Color;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -17,8 +22,10 @@ import javafx.scene.shape.ArcType;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 /**
  *
@@ -28,10 +35,18 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
 
     private Canvas canvas;
     private BlockChainNetwork blockChainNetwork;
+    private BlockChainNode dragNode = null;
     private int height = 800;
     private int width = 1000;
     
-    private BlockChainNode prevNode = null;
+    // Keep track of mouse pointer while dragging
+    private double  from_x = 0;
+    private double  from_y = 0;
+    private double  to_x = 0;
+    private double  to_y = 0;
+    private int     line_no = 1;
+    
+    private GraphicsContext gc;
     
     @Override
     public void start(Stage primaryStage) {
@@ -42,9 +57,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         primaryStage.setResizable(resizable);
         
         
-        blockChainNetwork = new BlockChainNetwork(20);
+        blockChainNetwork = new BlockChainNetwork(10);
         
-        Pane wrapperPane = new Pane();
+        StackPane wrapperPane = new StackPane();
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(wrapperPane);
         
@@ -52,37 +67,92 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         primaryStage.setTitle("Drawing Operations Test");
 
         Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-        System.out.println(" xres: " + primaryScreenBounds.getMaxX() + " yres: " + primaryScreenBounds.getMaxY());
+        height = (int)primaryScreenBounds.getMaxY() - 50;
+        width =  (int) primaryScreenBounds.getMaxX() - 50;
+        // System.out.println(" xres: " + primaryScreenBounds.getMaxX() + " yres: " + primaryScreenBounds.getMaxY());
         
         canvas = new Canvas(width, height);
         // Put canvas in the center of the window
         wrapperPane.getChildren().add(canvas);
         
-        
-        
-        // Bind the width/height property to the wrapper Pane
-        canvas.widthProperty().bind(wrapperPane.widthProperty());
-        canvas.heightProperty().bind(wrapperPane.heightProperty());
-        // redraw when resized
-        canvas.widthProperty().addListener(event -> drawShapes(canvas));
-        canvas.heightProperty().addListener(event -> drawShapes(canvas));
-     
         blockChainNetwork.initNetwork(width, height);
         blockChainNetwork.addTraverseListener(this);
         
+        canvas.setOnMousePressed((event) -> this.setFromPos(event));
+        
+        canvas.setOnMouseDragged((event) -> {
+            
+            if (dragNode != null){
+                
+               this.setToPos(event);
+               dragNode.setX((int)this.to_x);
+               dragNode.setY((int)this.to_y);
+               drawNetwork(canvas);
+               //blockChainNetwork.drawNodeAndEdges(dragNode,gc);
+               
+            }
+           
+            
+        }); 
+        
+        canvas.setOnMouseReleased((event) -> {
+            
+            dragNode.setX((int)event.getX());
+            dragNode.setY((int)event.getY());
+            
+            drawNetwork(canvas);
+            /*final Canvas new_line = new Canvas(400, 400);
+            final GraphicsContext gc = new_line.getGraphicsContext2D();
+            this.setToPos(event);
+            this.drawLine(gc);
+            //final new stright line
+            root.getChildren().add(line_no++,new_line); */
+        });
+        
+        final ChangeListener<Number> listener = new ChangeListener<Number>() {
+            final Timer timer = new Timer(); // uses a timer to call your resize method
+            TimerTask task = null; // task to execute after defined delay
+            final long delayTime = 200; // delay that has to pass in order to consider an operation done
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, final Number newValue) {
+                if (task != null) { // there was already a task scheduled from the previous operation ...
+                    task.cancel(); // cancel it, we have a new size to consider
+                }
+
+                task = new TimerTask() // create new task that calls your resize operation
+                {
+                    @Override
+                    public void run() {
+                        // here you can place your resize code
+                        //System.out.println("resize to " + primaryStage.getWidth() + " " + primaryStage.getHeight());
+                        blockChainNetwork.invalidateXY((int)primaryStage.getWidth(), (int)primaryStage.getHeight());
+                        drawNetwork(canvas);
+                    }
+                };
+                // schedule new task
+                timer.schedule(task, delayTime);
+            }
+        };
+        
+        primaryStage.widthProperty().addListener(listener);
+        primaryStage.heightProperty().addListener(listener);
         primaryStage.setScene(new Scene(borderPane,width,height));
         primaryStage.show();
         
 
     }
 
-    private void drawShapes(Canvas canvas) {
-
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        blockChainNetwork.depthFirstSearch(0);
-        gc.stroke();
-        blockChainNetwork.falsify_visited();
-        prevNode = null;
+   
+  
+    private void drawNetwork(Canvas canvas) {
+        // get the context
+        gc = canvas.getGraphicsContext2D();
+        // lets go through the nodes and be notfied for each node.
+        gc.clearRect(0,0,canvas.getWidth(),canvas.getHeight());
+        blockChainNetwork.drawNetwork(gc);
+        //gc.stroke();
+        
           
     }
 
@@ -95,28 +165,18 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
 
     @Override
     public void apply(BlockChainNode aNode) {
-        
-       GraphicsContext gc = canvas.getGraphicsContext2D();
-       
-       int x = aNode.getX();
-       int y = aNode.getY();
-       
-       gc.setFill(Color.BLACK);
-       gc.fillOval(x - 10.0,y-10.0,10.0,10.0);
-       
-       //drawEdge
-       if (prevNode == null){
-            prevNode = aNode;
-       }
-       else{
-           int x2 = prevNode.getX();
-           int y2 = prevNode.getY();
-           gc.setStroke(Color.RED);
-           gc.moveTo(x2-5, y2-5);
-           gc.lineTo(x-5, y-5);
-           prevNode = aNode;
-       }
        
     }
+    
+    private void setFromPos(MouseEvent event) {
+        this.from_x = event.getSceneX();
+        this.from_y = event.getSceneY();
+        dragNode = blockChainNetwork.findNodeFromXYPos((int)from_x, (int)from_y);
+    }
+
+    private void setToPos(MouseEvent event) {
+        this.to_x = event.getSceneX();
+        this.to_y = event.getSceneY();
+    }   
 
 }
