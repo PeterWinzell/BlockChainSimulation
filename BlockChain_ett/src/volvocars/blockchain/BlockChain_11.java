@@ -37,6 +37,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+
 /**
  *
  * @author Peter Winzell
@@ -61,7 +62,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     @Override
     public void start(Stage primaryStage) {
         
-        // bug ...
+        // bug workaround...
         final boolean resizable = primaryStage.isResizable();
         primaryStage.setResizable(!resizable);
         primaryStage.setResizable(resizable);
@@ -71,10 +72,17 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         
         StackPane wrapperPane = new StackPane();
         BorderPane borderPane = new BorderPane();
-       
+        StackPane bottomPane = new StackPane();
+        wrapperPane.setMaxSize(1000,1000);
+        wrapperPane.setPrefSize(1000,1000);
+        wrapperPane.setMinSize(500,500);
         borderPane.setCenter(wrapperPane);
        
         borderPane.setLeft(addVBox());
+        borderPane.setRight(addVBox());
+        bottomPane.getChildren().add(getBottomNode());
+        borderPane.setBottom(bottomPane);
+       
         primaryStage.setTitle("BlockChain Network Simulation");
         
         
@@ -98,9 +106,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                             public void run() {
                                    wrapperPane.getChildren().remove(0);
                                     
-                                    
-                                    //Bounds bounds = wrapperPane.getBoundsInLocal();
-                                    Bounds bounds = getVisibleBounds(wrapperPane);
+                                     //Bounds bounds = getVisibleBounds(wrapperPane);
+                                     //if (bounds == null)
+                                     Bounds   bounds = wrapperPane.getBoundsInParent();
+                                   
                                     int width = (int)bounds.getWidth();
                                     int height = (int)bounds.getHeight();
                                     
@@ -251,12 +260,20 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
             return aNode.getClip().getBoundsInParent();
         }
 
+       
         // If node has parent, get parent visible bounds in node coords
         Bounds bounds = aNode.getParent() != null ? getVisibleBounds(aNode.getParent()) : null;
         if (bounds != null && !bounds.isEmpty()) {
             bounds = aNode.parentToLocal(bounds);
         }
         return bounds;
+    }
+    
+    private Node getBottomNode(){
+        Canvas c = new Canvas(500,100);
+        gc = c.getGraphicsContext2D();
+        gc.strokeText(" Here we will have a bottom transaction ticker... ",200,50 );
+        return c;
     }
 
 }

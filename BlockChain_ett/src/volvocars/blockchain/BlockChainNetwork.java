@@ -64,9 +64,11 @@ public class BlockChainNetwork implements BroadCastListener {
     
     public void initNetwork(int width, int height){
         // give the network nodes a representation in the 2D plane.
+        int adjustw = 40;
+        int adjusth = 40;
         for (BlockChainNode bNode:nodes){
-            bNode.setX((int)  Math.ceil(Math.random() * width));
-            bNode.setY( (int) Math.ceil(Math.random() * height));
+            bNode.setX((int)  Math.ceil(Math.random() * (width-adjustw)));
+            bNode.setY( (int) Math.ceil(Math.random() * (height-adjusth)));
         }
     }
     
