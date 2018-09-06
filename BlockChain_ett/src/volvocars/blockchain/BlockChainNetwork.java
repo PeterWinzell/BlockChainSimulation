@@ -151,11 +151,14 @@ public class BlockChainNetwork implements BroadCastListener {
     public void drawNetwork(GraphicsContext gc){
   
         for (int i = 0; i < networkNodes;i++){
-            drawNode(gc,nodes.get(i));
-            for (int j = i+1 ; j < networkNodes;j++)
+            
+            for (int j = i+1 ; j < networkNodes;j++){
                 if (edge(i,j)){
                     drawEdge(gc,i,j);
                 }
+            }   
+            drawNode(gc,nodes.get(i));
+            
         }
                     
     }
@@ -169,18 +172,18 @@ public class BlockChainNetwork implements BroadCastListener {
         int dx = Math.abs(mousex-nodex);
         int dy = Math.abs(mousey-nodey);
         
-        return ( dx*dx + dy*dy <= 100 );
+        return ( dx*dx + dy*dy <= 100 ); // pytagoras...
 
     }
     
     public BlockChainNode findNodeFromXYPos(int x, int y) {
 
         boolean found = false;
-        int nextNodeIndex = -1;
+        int nextNodeIndex = 0;
         BlockChainNode aNode = null;
         
         while (!found && nextNodeIndex < networkNodes) {
-            nextNodeIndex++;
+            
             
             BlockChainNode tempNode = nodes.get(nextNodeIndex);
             int getNodeX = tempNode.getX();
@@ -188,6 +191,8 @@ public class BlockChainNetwork implements BroadCastListener {
             
             found = inCircle(x,y,getNodeX,getNodeY);
             if (found) aNode = tempNode;
+            
+            nextNodeIndex++;
         }
 
         return aNode;
