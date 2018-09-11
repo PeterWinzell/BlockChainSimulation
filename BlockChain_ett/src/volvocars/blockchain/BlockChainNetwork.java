@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 /**
  *
@@ -39,14 +40,13 @@ public class BlockChainNetwork implements BroadCastListener {
         
         //init to false;
         noEdges();
-       
         falsify_visited();
         
         for (int i = 0;i < networkNodes;i++){
             BlockChainNode bNode = new BlockChainNode(isForger(),forgers,i);
             bNode.addBroadCastListener(this);
             nodes.add(bNode);
-            edgeMatrix[i][(i+1) % networkNodes] = true;    
+            edgeMatrix[i][(i+1) % networkNodes] = false;    
         }    
     }
     
@@ -63,15 +63,108 @@ public class BlockChainNetwork implements BroadCastListener {
     }
     
     public void initNetwork(int width, int height){
-        // give the network nodes a representation in the 2D plane.
-        int adjustw = 40;
-        int adjusth = 40;
-        for (BlockChainNode bNode:nodes){
-            bNode.setX((int)  Math.ceil(Math.random() * (width-adjustw)));
-            bNode.setY( (int) Math.ceil(Math.random() * (height-adjusth)));
-        }
+        setXYCoordinates_2(width, height);
     }
     
+    public void setXYCoordinates(double w,double h){
+        
+        double xstep = w / 3;
+        double ystep = h / 3;
+        
+        double xpos = 40;
+        double ypos = 40;
+        
+        double maxlength = 150;
+        
+        int nodeIndex = 0;
+        BlockChainNode prevnode = null;
+        
+        while (xpos < w && (nodeIndex < networkNodes)){
+            while (ypos < h && (nodeIndex < networkNodes)){
+                
+                double x = xpos + Math.random()*xstep;
+                double y = ypos + Math.random()*ystep;
+                
+                BlockChainNode centernode = nodes.get(nodeIndex++);
+                if (prevnode != null){
+                    edgeMatrix[centernode.getEdgeMatrixIndex()][prevnode.getEdgeMatrixIndex()] = true;
+                }
+                prevnode = centernode;
+                centernode.setX((int)x);
+                centernode.setY((int)y);
+                
+                double radians = 0;
+                double anglestep = Math.PI / 3;
+                
+                while (radians <= Math.PI*2 && (nodeIndex < networkNodes)){
+                    
+                    double length = Math.random() * maxlength;
+                    double xprim = x + length*Math.cos(radians);
+                    double yprim = y + length*Math.sin(radians); 
+                    
+                    BlockChainNode nextnode = nodes.get(nodeIndex++);
+                    nextnode.setX((int) xprim);
+                    nextnode.setY((int) yprim);
+                    edgeMatrix[centernode.getEdgeMatrixIndex()][nextnode.getEdgeMatrixIndex()] = true;
+                    radians = radians + anglestep;
+                    
+                }
+                ypos = ypos + ystep;
+                
+            }
+            xpos = xpos + xstep;
+        }
+    }     
+    
+    public void setXYCoordinates_2(double w, double h) {
+
+        double maxlength = 150;
+        final double xinset =  40;
+        final double yinset = 40;
+
+        int nodeIndex = 0;
+        BlockChainNode prevnode = null;
+
+        while (nodeIndex < networkNodes) {
+
+            double x =  Math.random() * w;
+            double y =  Math.random() * h;
+            
+            x = Math.max(xinset,Math.min(x,w-40));
+            y = Math.max(yinset, Math.min(y,h-40));
+            
+            BlockChainNode centernode = nodes.get(nodeIndex++);
+            if (prevnode != null) {
+                edgeMatrix[centernode.getEdgeMatrixIndex()][prevnode.getEdgeMatrixIndex()] = true;
+            }
+            prevnode = centernode;
+            
+            centernode.setX((int) x);
+            centernode.setY((int) y);
+
+            double radians = 0;
+            double anglestep = Math.PI / 3;
+
+            while (radians <= Math.PI * 2 && (nodeIndex < networkNodes)) {
+                BlockChainNode nextnode = nodes.get(nodeIndex++);
+                
+                double length = Math.random() * maxlength;
+                double xprim = x + length * Math.cos(radians);
+                double yprim = y + length * Math.sin(radians);
+                // make sure that we don't end up outside the screen
+                xprim = Math.max(xinset,Math.min(xprim,w-40));
+                yprim = Math.max(yinset, Math.min(yprim,h-40));
+                nextnode.setX((int) xprim);
+                nextnode.setY((int) yprim);
+                
+                edgeMatrix[centernode.getEdgeMatrixIndex()][nextnode.getEdgeMatrixIndex()] = true;
+                radians = radians + anglestep;
+            }
+
+        }
+    }
+        
+        
     private boolean isForger(){
         return ( Math.random() <= forgerProb);
     }
@@ -130,12 +223,13 @@ public class BlockChainNetwork implements BroadCastListener {
        int x = aNode.getX();
        int y = aNode.getY();
        
+       double radious = aNode.getSize();
        if (aNode.isForger())
            gc.setFill(Color.CRIMSON);
         else
-            gc.setFill(Color.BLACK);
+            gc.setFill(Color.YELLOW);
        
-       gc.fillOval(x,y,10.0,10.0); 
+       gc.fillOval(x,y,radious,radious); 
     }
     
     private void drawEdge(GraphicsContext gc,int node1,int node2){
@@ -143,7 +237,16 @@ public class BlockChainNetwork implements BroadCastListener {
         BlockChainNode aNode = nodes.get(node1);
         BlockChainNode anotherNode = nodes.get(node2);
         
+        Paint edgeColor = null;
+        if (aNode.isForger() || anotherNode.isForger()){
+            edgeColor = Color.WHITESMOKE;
+        }
+        else{
+            edgeColor = Color.CHARTREUSE;
+        }
+        
         gc.beginPath();
+        gc.setStroke(edgeColor);
         gc.moveTo(aNode.getX() + 5, aNode.getY() + 5);
         gc.lineTo(anotherNode.getX() + 5,anotherNode.getY() + 5);
         gc.stroke();
@@ -154,14 +257,18 @@ public class BlockChainNetwork implements BroadCastListener {
   
         for (int i = 0; i < networkNodes;i++){
             
-            for (int j = i+1 ; j < networkNodes;j++){
-                if (edge(i,j)){
+            for (int j = 0 ; j < networkNodes;j++){
+                if (edge(i,j) || edge(j,i) ){
                     drawEdge(gc,i,j);
                 }
             }   
-            drawNode(gc,nodes.get(i));
+           // drawNode(gc,nodes.get(i));
             
         }
+        
+        
+        for (int i = 0; i < networkNodes; i++)
+            drawNode(gc,nodes.get(i));
                     
     }
     
@@ -169,12 +276,12 @@ public class BlockChainNetwork implements BroadCastListener {
         initNetwork(w, h);
     }
     
-    public boolean inCircle(int mousex,int mousey,int nodex,int nodey){
+    public boolean inCircle(int mousex,int mousey,int nodex,int nodey,double diameter){
         
-        int dx = Math.abs(mousex-nodex);
-        int dy = Math.abs(mousey-nodey);
-        
-        return ( dx*dx + dy*dy <= 100 ); // pytagoras...
+        int dx = Math.abs(mousex-(nodex+5));
+        int dy = Math.abs(mousey-(nodey+5));
+        double radius = diameter / 2;
+        return ( dx*dx + dy*dy <= (radius*radius) ); // pytagoras...
 
     }
     
@@ -190,8 +297,8 @@ public class BlockChainNetwork implements BroadCastListener {
             BlockChainNode tempNode = nodes.get(nextNodeIndex);
             int getNodeX = tempNode.getX();
             int getNodeY = tempNode.getY();
-            
-            found = inCircle(x,y,getNodeX,getNodeY);
+            double diameter = tempNode.getSize();
+            found = inCircle(x,y,getNodeX,getNodeY,diameter);
             if (found) aNode = tempNode;
             
             nextNodeIndex++;
@@ -200,17 +307,8 @@ public class BlockChainNetwork implements BroadCastListener {
         return aNode;
     }
     
-    public void drawNodeAndEdges(BlockChainNode node,GraphicsContext gc){
-        
-        /*for (int i = 0; i < networkNodes; i++){
-            BlockChainNode anotherNode = nodes.get(i);
-            if ((node != anotherNode) && node.hasEdgeTo(anotherNode)){
-               this.drawEdge(gc,node.index, i);    
-            }
-        }*/
-        
-        drawNode(gc,node);
-       
+    public void drawNodeAndEdges(BlockChainNode node,GraphicsContext gc){ 
+        drawNode(gc,node);  
     }
 }
 

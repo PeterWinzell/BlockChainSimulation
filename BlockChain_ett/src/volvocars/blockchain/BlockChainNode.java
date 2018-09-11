@@ -27,7 +27,12 @@ public class BlockChainNode<M,L> extends Thread implements BroadCastListener<M,L
     private boolean visited = false;
     private L listener; 
     
+    private NapWallet wallet = null;
+    private final int minsize = 5;
+    
     public BlockChainNode(boolean forger,List<BlockChainNode> forgerList, int index){
+        
+        this.wallet = new NapWallet(new Nap(1000*Math.random()));
         
         this.index = index;
         this.isForger = forger;
@@ -93,6 +98,10 @@ public class BlockChainNode<M,L> extends Thread implements BroadCastListener<M,L
     
     public boolean hasEdgeTo(BlockChainNode node){
         return true;
+    }
+    
+    public double getSize(){
+        return minsize + Math.log(wallet.getNapWealth());
     }
         
 }

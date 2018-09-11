@@ -1,0 +1,20 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Sep 6, 2018, 3:51:16 PM
+    Author     : Peter Winzell
+*/
+
+#wrapperPane{
+    -fx-background-color: black;
+}
+.button{
+    -fx-background-color: black;
+    -fx-text-fill: red;
+    -fx-border-radius:7;
+    -fx-border-width:2;
+    -fx-border-color:white;
+}

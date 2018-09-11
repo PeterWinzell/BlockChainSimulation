@@ -36,6 +36,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import jfxtras.labs.scene.control.gauge.Content;
 
 
 /**
@@ -71,8 +72,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         blockChainNetwork = new BlockChainNetwork(30);
         
         StackPane wrapperPane = new StackPane();
+        wrapperPane.getStylesheets().add(this.getClass().getResource("backgroundCSS.css").toExternalForm());
         BorderPane borderPane = new BorderPane();
         StackPane bottomPane = new StackPane();
+       
+        wrapperPane.setId("wrapperPane");
         wrapperPane.setMaxSize(1000,1000);
         wrapperPane.setPrefSize(1000,1000);
         wrapperPane.setMinSize(500,500);
@@ -131,7 +135,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         
         primaryStage.widthProperty().addListener(listener);
         primaryStage.heightProperty().addListener(listener);
-        primaryStage.setScene(new Scene(borderPane,width,height));
+        
+        Scene scene = new Scene(borderPane,width,height);
+        
+        
+        primaryStage.setScene(scene);
         primaryStage.show();
         
         //Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
@@ -160,7 +168,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                wrapperPane.getChildren().remove(0);
                final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
                
-               this.setToPos(event);
+               Bounds   innerBounds = wrapperPane.getBoundsInParent();
+              
+               
+               this.setToPos(event,innerBounds);
                dragNode.setX((int)this.to_x);
                dragNode.setY((int)this.to_y);
                drawNetwork(temp_canvas);
@@ -178,8 +189,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                 wrapperPane.getChildren().remove(0);
                 final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
                 
-                dragNode.setX((int)event.getX());
-                dragNode.setY((int)event.getY());
+                Bounds innerBounds = wrapperPane.getBoundsInParent();
+                this.setToPos(event,innerBounds);
+                
+                dragNode.setX((int)this.to_x);
+                dragNode.setY((int)this.to_y);
                 drawNetwork(temp_canvas);
                 canvas = temp_canvas;
                 
@@ -220,10 +234,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         gc = canvas.getGraphicsContext2D();
         // lets go through the nodes and be notfied for each node.
         gc.clearRect(0,0,canvas.getWidth(),canvas.getHeight());
-        blockChainNetwork.drawNetwork(gc);
-        //gc.stroke();
-        
-          
+        blockChainNetwork.drawNetwork(gc);        
     }
 
     /**
@@ -244,9 +255,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         dragNode = blockChainNetwork.findNodeFromXYPos((int)from_x, (int)from_y);
     }
 
-    private void setToPos(MouseEvent event) {
-        this.to_x = event.getX();
-        this.to_y = event.getY();
+    private void setToPos(MouseEvent event,Bounds currentBounds) {
+        
+        this.to_x = getMoveX((int)event.getX(),0, (int)currentBounds.getWidth());
+        this.to_y = getMoveY((int)event.getY(),(int)currentBounds.getMinY(),(int)(currentBounds.getMinY() + currentBounds.getHeight()));
     }   
     
     public static Bounds getVisibleBounds(Node aNode) {
@@ -274,6 +286,14 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         gc = c.getGraphicsContext2D();
         gc.strokeText(" Here we will have a bottom transaction ticker... ",200,50 );
         return c;
+    }
+    
+    private int getMoveX(int x,int minX,int maxX){
+        return Math.min(Math.max(minX + 40,x),maxX - 40);
+    }
+    
+    private int getMoveY(int y,int minY,int maxY){
+        return Math.min(Math.max(minY + 40,y),maxY - 40);
     }
 
 }
