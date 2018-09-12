@@ -111,11 +111,12 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
     
     @Override
     public void run() {
-        stopped = true;
+        stopped = false;
+        
         while(!stopped){
             Nap nap = new Nap(Math.random() * 1000);
             //flip a coin
-            if (Math.random() < .5){
+            if (Math.random() < .9){
                 wallet.addNap(nap);
             }
             else{
@@ -128,7 +129,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
                 Logger.getLogger(BlockChainNode.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        System.out.println(" running this thread " + index);
+        System.out.println(" Thread is done " + index);
     }
     
     public void stop(){
