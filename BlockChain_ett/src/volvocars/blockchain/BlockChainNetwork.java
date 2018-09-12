@@ -8,6 +8,8 @@ package volvocars.blockchain;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -309,6 +311,21 @@ public class BlockChainNetwork implements BroadCastListener {
     
     public void drawNodeAndEdges(BlockChainNode node,GraphicsContext gc){ 
         drawNode(gc,node);  
+    }
+    
+    public void startSimulation(){
+        ExecutorService service = Executors.newFixedThreadPool(nodes.size());
+        nodes.stream().forEach((node) -> {
+            service.submit(node);
+        });    
+        
+        System.out.println("start Action");
+    }
+    
+    public void stopSimulation(){
+        nodes.stream().forEach((node) -> {
+            node.stop();
+        }); 
     }
 }
 

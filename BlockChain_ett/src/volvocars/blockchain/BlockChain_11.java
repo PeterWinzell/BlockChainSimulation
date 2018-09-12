@@ -27,6 +27,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -60,6 +61,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     
     private GraphicsContext gc;
     
+    private Button startButton;
+    private Button pauseButton;
+    
     @Override
     public void start(Stage primaryStage) {
         
@@ -68,6 +72,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         primaryStage.setResizable(!resizable);
         primaryStage.setResizable(resizable);
         
+        //Buttons
+        startButton = new Button("Start simulation");
+        pauseButton = new Button("Pause simulation");
         
         blockChainNetwork = new BlockChainNetwork(30);
         
@@ -86,7 +93,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         borderPane.setRight(addVBox());
         bottomPane.getChildren().add(getBottomNode());
         borderPane.setBottom(bottomPane);
-       
+        
+        
+        
         primaryStage.setTitle("BlockChain Network Simulation");
         
         
@@ -201,9 +210,18 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
             }    
             
         });
+        
+        startButton.setOnAction((event) -> {
+           blockChainNetwork.startSimulation();
+        });
+        
+        pauseButton.setOnAction((event) -> {
+            blockChainNetwork.stopSimulation();
+        });
 
     }
 
+    
    public VBox addVBox()
 
     {
@@ -215,6 +233,12 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         vbox.getChildren().add(title);
 
+        
+        vbox.getChildren().add(startButton);
+        
+        
+        vbox.getChildren().add(pauseButton);
+        
         Hyperlink options[] = new Hyperlink[]{
             new Hyperlink("Transactions"),
             new Hyperlink("Ledger"),
@@ -229,7 +253,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         return vbox;
     }
   
-    private void drawNetwork(Canvas canvas) {
+    private synchronized void drawNetwork(Canvas canvas) {
         // get the context
         gc = canvas.getGraphicsContext2D();
         // lets go through the nodes and be notfied for each node.

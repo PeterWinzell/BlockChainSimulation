@@ -27,6 +27,23 @@ public class NapWallet {
         wallet.add(newNap);
     }
     
+    // withdraw naps from the wallet naps until the entire amount is subtracted
+    public void deleteNaps(Nap nap){
+        double withdrawamout = nap.getAmount();
+        for (Nap anap:wallet){
+            double difference = anap.amount - withdrawamout;
+            
+            if (difference < 0 )
+                anap.setAmount(0);
+            else{
+               anap.setAmount(difference);
+               break;
+            }   
+            
+            withdrawamout = Math.abs(difference);
+        }
+    }
+    
     public double getNapWealth(){
         double wealth = 0.0;
         for (Nap nap : wallet) {

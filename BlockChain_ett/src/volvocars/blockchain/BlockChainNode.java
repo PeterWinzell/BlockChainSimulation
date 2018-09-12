@@ -6,12 +6,14 @@
 package volvocars.blockchain;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Peter Winzell
  */
-public class BlockChainNode<M,L> extends Thread implements BroadCastListener<M,L>{
+public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
     //id
     protected int index;
     
@@ -29,6 +31,7 @@ public class BlockChainNode<M,L> extends Thread implements BroadCastListener<M,L
     
     private NapWallet wallet = null;
     private final int minsize = 5;
+    
     
     public BlockChainNode(boolean forger,List<BlockChainNode> forgerList, int index){
         
@@ -102,6 +105,34 @@ public class BlockChainNode<M,L> extends Thread implements BroadCastListener<M,L
     
     public double getSize(){
         return minsize + Math.log(wallet.getNapWealth());
+    }
+
+    private boolean stopped = false;
+    
+    @Override
+    public void run() {
+        stopped = true;
+        while(!stopped){
+            Nap nap = new Nap(Math.random() * 1000);
+            //flip a coin
+            if (Math.random() < .5){
+                wallet.addNap(nap);
+            }
+            else{
+                wallet.deleteNaps(nap);
+            }
+            
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(BlockChainNode.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        System.out.println(" running this thread " + index);
+    }
+    
+    public void stop(){
+        stopped = true;
     }
         
 }
