@@ -9,7 +9,7 @@ package volvocars.blockchain;
  *
  * @author Peter Winzell
  */
-public abstract class MessageBase<KEY> implements Transaction{
+public abstract class MessageBase<KEY> {
 
     private String signature;
     public String getSignature(){ return signature;} 

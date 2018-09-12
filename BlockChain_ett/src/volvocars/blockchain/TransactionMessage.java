@@ -11,7 +11,7 @@ package volvocars.blockchain;
  */
 public class TransactionMessage extends MessageBase{
 
-    @Override
+    
     public void sign(Object privateKey) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

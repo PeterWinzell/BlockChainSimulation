@@ -9,7 +9,6 @@ package volvocars.blockchain;
  *
  * @author Peter Winzell
  */
-public enum Transaction {
-    BUY,
-    SELL
+public interface BroadCastReceiver<M> {    
+    public void receiveMessage(M message);
 }

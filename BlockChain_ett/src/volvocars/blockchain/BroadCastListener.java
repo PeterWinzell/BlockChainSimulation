@@ -10,6 +10,6 @@ package volvocars.blockchain;
  * @author Peter Winzell
  */
 public interface BroadCastListener<M,L> {
-    void MessageNotification(M message);
+    void  MessageNotification(M message);
     void addBroadCastListener(L listener);
 }

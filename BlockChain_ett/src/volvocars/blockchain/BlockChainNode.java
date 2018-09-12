@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author Peter Winzell
  */
-public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
+public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,BroadCastReceiver<M>{
     //id
     protected int index;
     
@@ -116,15 +116,18 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
         while(!stopped){
             Nap nap = new Nap(Math.random() * 1000);
             //flip a coin
-            if (Math.random() < .9){
-                wallet.addNap(nap);
+            Message message = null;
+            if (Math.random() < .5){
+                message = new Message(this,null,Transaction.BUY,new Nap(10));
+                //wallet.addNap(nap);
             }
             else{
-                wallet.deleteNaps(nap);
+                message = new Message(this,null,Transaction.SELL,new Nap(10));
+                //wallet.deleteNaps(nap);
             }
-            
+            ((BroadCastListener)listener).MessageNotification(message);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000); // every second something occurs.
             } catch (InterruptedException ex) {
                 Logger.getLogger(BlockChainNode.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -134,6 +137,11 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>{
     
     public void stop(){
         stopped = true;
+    }
+
+    @Override
+    public void receiveMessage(M message) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
         
 }

@@ -18,7 +18,7 @@ import javafx.scene.paint.Paint;
  *
  * @author Peter Winzell
  */
-public class BlockChainNetwork implements BroadCastListener {
+public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> {
     
     // The network is represented of a connected undirected Graph.
     private final boolean edgeMatrix[][];
@@ -172,8 +172,15 @@ public class BlockChainNetwork implements BroadCastListener {
     }
 
     @Override
-    public void MessageNotification(Object message) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void MessageNotification(M message) {
+        
+        Message mess = (Message)message;
+        BlockChainNode bNode = (BlockChainNode)mess.getSender();
+        BlockChainNode bNode2 = (BlockChainNode)mess.getReciever();
+        Transaction tx = mess.getTransaction();
+        Nap nap = mess.getAmount();
+                
+        System.out.println("Tx " + tx + " " + nap.getAmount() + " " + bNode.index);
     }
 
     @Override
@@ -318,8 +325,7 @@ public class BlockChainNetwork implements BroadCastListener {
         nodes.stream().forEach((node) -> {
             service.submit(node);
         });    
-        
-        System.out.println("start Action");
+        System.out.println("simulationstarted");
     }
     
     public void stopSimulation(){
@@ -327,6 +333,13 @@ public class BlockChainNetwork implements BroadCastListener {
             node.stop();
         }); 
     }
+
+    @Override
+    public void run() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+   
 }
 
 
