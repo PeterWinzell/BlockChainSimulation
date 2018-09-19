@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package volvocars.blockchain;
+package blockchainhashtest;
 
 /**
  *
  * @author Peter Winzell
  */
-public interface BroadCastListener<M,L> {
-    void MessageNotification(M message);
-    void addBroadCastListener(L listener);
+public class Chain {
+    
 }
