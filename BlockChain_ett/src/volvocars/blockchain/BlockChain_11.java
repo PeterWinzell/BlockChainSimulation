@@ -37,7 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import jfxtras.labs.scene.control.gauge.Content;
+//import jfxtras.labs.scene.control.gauge.Content;
 
 
 /**

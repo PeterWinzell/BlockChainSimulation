@@ -24,3 +24,6 @@ hs_err_pid*
 /JavaFXApplication3/nbproject/private/
 /JavaFXApplication3/dist/
 /JavaFXApplication3/build/
+/nbproject/private/
+/build/
+/dist/
