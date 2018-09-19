@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author Peter Winzell
+ * Blockchainnodes are either forgers or users with a wallet.
  */
 public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,BroadCastReceiver<M>{
     //id

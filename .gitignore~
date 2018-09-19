@@ -24,9 +24,11 @@ hs_err_pid*
 /JavaFXApplication3/nbproject/private/
 /JavaFXApplication3/dist/
 /JavaFXApplication3/build/
+<<<<<<< HEAD
 /nbproject/private/
 /build/
 /dist/
+=======
 /BlockChain_ett/build/
 /BlockChain_ett/dist/
 /BlockChain_ett/nbproject/private/
@@ -34,3 +36,4 @@ hs_err_pid*
 /RubberBandingExample/build/
 /RubberBandingExample/dist/
 /BlockChainHashTest/nbproject/private/
+>>>>>>> 1745caf117c6d266aa434e5ea2f3be895c8234b7
