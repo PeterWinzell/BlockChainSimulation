@@ -7,8 +7,11 @@ package volvocars.blockchain;
 
 /**
  *
- * @author pwinzell
+ * @author Peter Winzell
  */
-public interface Transaction {
-    public boolean processTransaction();
+public enum Transaction_type {
+    BUY,
+    SELL,
+    ODOMETER,
+    WALLET
 }

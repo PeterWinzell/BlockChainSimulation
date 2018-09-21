@@ -18,20 +18,29 @@ public class MemoryPool implements TransactionMemoryPool
 
     
 
-    public void MemoryPool(){
+    public  MemoryPool(){
         list = new ArrayList();
     }
     
     @Override
     public void deleteTransaction(TransactionMessage transaction) {
-        list.remove(transaction);
+        synchronized(this){
+            list.remove(transaction);
+        }    
     }
 
     @Override
     public void deleteAll() {
-        list.removeAll(list);
+        synchronized(this){
+            list.removeAll(list);
+        }    
     }
 
+    public void emptyTransactions(){
+    
+            deleteAll();
+       
+    }
     @Override
     public void signTransaction(TransactionMessage transaction, Object priavteKey) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -39,6 +48,40 @@ public class MemoryPool implements TransactionMemoryPool
 
     @Override
     public void addTransaction(TransactionMessage transaction) {
-        list.add(transaction);
+        synchronized(this){
+            list.add(transaction);
+        }
+    }
+    
+    public boolean timeToForge(){
+        synchronized(this){
+            System.out.println(" time to forge " + list.size());
+            return (list.size() >= 20);
+        }    
+    }
+
+    Block getNewBlockFromTransactions(Block prevBlock) {
+        Block b = new Block(prevBlock.hash);
+        
+        for(TransactionMessage transMess: list){
+            b.addTransaction(transMess.getTransation());
+        }
+        b.calculateHash();
+        
+        return b;
+    }
+    
+    public void clearAll(){
+        synchronized(this){
+            list.clear();
+        }    
+    }
+    
+    public void clearAll(MemoryPool mined){
+        synchronized(this){
+            for (TransactionMessage removee:mined.list){
+                list.remove(removee);
+            }
+        }
     }
 }

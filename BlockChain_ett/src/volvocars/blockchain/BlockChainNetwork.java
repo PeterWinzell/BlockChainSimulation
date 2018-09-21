@@ -21,19 +21,33 @@ import javafx.scene.paint.Paint;
 public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> {
     
     // The network is represented of a connected undirected Graph.
+    
+    public static int blockHeight = 0; // genesis block
+    
     private final boolean edgeMatrix[][];
     private final boolean visited[];
     private final int networkNodes;
     private static final double forgerProb = 0.1;
     
+    private static float minimumTransaction = 0.1f;
+
+    public static float getMinimumTransaction() {
+        return minimumTransaction;
+    }
+
+    public static void setMinimumTransaction(float minimumTransaction) {
+        BlockChainNetwork.minimumTransaction = minimumTransaction;
+    }
+    
     List<BlockChainNode> nodes;    // Keep track of network players
     List<BlockChainNode> forgers;  // keep track of forgers (block validators)
     List<DfsTraverseListener> travlisteners; // Classes that wants to listen on G traverse for each node.
-    
+    List<BroadCastReceiver> mempoolListeners;
             
     public BlockChainNetwork(int networkNodes){
         this.networkNodes = networkNodes;
         
+        mempoolListeners = new ArrayList<>();
         travlisteners = new ArrayList<>();
         nodes = new ArrayList<>(networkNodes);
         forgers = new ArrayList<>();
@@ -45,7 +59,7 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
         falsify_visited();
         
         for (int i = 0;i < networkNodes;i++){
-            BlockChainNode bNode = new BlockChainNode(isForger(),forgers,i);
+            BlockChainNode bNode = new BlockChainNode(forgers,i);
             bNode.addBroadCastListener(this);
             nodes.add(bNode);
             edgeMatrix[i][(i+1) % networkNodes] = false;    
@@ -92,8 +106,10 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
                     edgeMatrix[centernode.getEdgeMatrixIndex()][prevnode.getEdgeMatrixIndex()] = true;
                 }
                 prevnode = centernode;
+                
                 centernode.setX((int)x);
                 centernode.setY((int)y);
+                centernode.setForger();
                 
                 double radians = 0;
                 double anglestep = Math.PI / 3;
@@ -143,7 +159,10 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
             
             centernode.setX((int) x);
             centernode.setY((int) y);
-
+            centernode.setForger();
+            if (!mempoolListeners.contains(centernode))
+                mempoolListeners.add(centernode);
+            
             double radians = 0;
             double anglestep = Math.PI / 3;
 
@@ -173,14 +192,12 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
 
     @Override
     public void MessageNotification(M message) {
-        
-        Message mess = (Message)message;
-        BlockChainNode bNode = (BlockChainNode)mess.getSender();
-        BlockChainNode bNode2 = (BlockChainNode)mess.getReciever();
-        Transaction tx = mess.getTransaction();
-        Nap nap = mess.getAmount();
-                
-        System.out.println("Tx " + tx + " " + nap.getAmount() + " " + bNode.index);
+        synchronized(this){
+        TransactionMessage mess = (TransactionMessage)message;
+        for (BroadCastReceiver listener : mempoolListeners){
+            listener.receiveMessage(mess);
+        }   
+        }
     }
 
     @Override
@@ -263,22 +280,22 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
     }
     
     public void drawNetwork(GraphicsContext gc){
-  
-        for (int i = 0; i < networkNodes;i++){
-            
-            for (int j = 0 ; j < networkNodes;j++){
-                if (edge(i,j) || edge(j,i) ){
-                    drawEdge(gc,i,j);
+        synchronized (this) {
+            for (int i = 0; i < networkNodes; i++) {
+
+                for (int j = 0; j < networkNodes; j++) {
+                    if (edge(i, j) || edge(j, i)) {
+                        drawEdge(gc, i, j);
+                    }
                 }
-            }   
-           // drawNode(gc,nodes.get(i));
-            
-        }
-        
-        
-        for (int i = 0; i < networkNodes; i++)
-            drawNode(gc,nodes.get(i));
-                    
+                // drawNode(gc,nodes.get(i));
+
+            }
+
+            for (int i = 0; i < networkNodes; i++) {
+                drawNode(gc, nodes.get(i));
+            }
+        }        
     }
     
     public void invalidateXY(int w, int h){

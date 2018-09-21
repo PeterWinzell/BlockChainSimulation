@@ -13,7 +13,7 @@ public class Message extends MessageBase{
 
     private BroadCastListener sender;
     private BroadCastListener reciever;
-    private Transaction  transaction;
+    private Transaction_type  transaction;
     private Nap amount;
             
    
@@ -21,7 +21,7 @@ public class Message extends MessageBase{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    public Message(BroadCastListener sender,BroadCastListener reciever,Transaction t,Nap amount){
+    public Message(BroadCastListener sender,BroadCastListener reciever,Transaction_type t,Nap amount){
         
         this.sender = sender;
         this.reciever = reciever;
@@ -38,7 +38,7 @@ public class Message extends MessageBase{
         return reciever;
     }
 
-    public Transaction getTransaction() {
+    public Transaction_type getTransaction() {
         return transaction;
     }
 
@@ -54,7 +54,7 @@ public class Message extends MessageBase{
         this.reciever = reciever;
     }
 
-    public void setTransaction(Transaction transaction) {
+    public void setTransaction(Transaction_type transaction) {
         this.transaction = transaction;
     }
 

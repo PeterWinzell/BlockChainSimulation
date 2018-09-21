@@ -5,6 +5,10 @@
  */
 package volvocars.blockchain;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +21,12 @@ public class NapWallet {
     private List<Nap> wallet;
     private double naps = 0.0;
     
-    public NapWallet(Nap initialNap){
+    public NapWallet(Nap initialNap) throws NoSuchAlgorithmException{
         wallet = new ArrayList();
         wallet.add(initialNap);
+        
+        //KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+       // keypair = keyGen.genKeyPair();
     }
     
     public void addNaps(double napstobeadded){
@@ -54,5 +61,12 @@ public class NapWallet {
     
     public void addNap(Nap nap){
         wallet.add(nap);
+    }
+    
+    KeyPair keypair;
+    
+    
+    public PublicKey getPublicKey(){
+        return keypair.getPublic();
     }
 }

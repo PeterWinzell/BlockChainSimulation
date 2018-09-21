@@ -8,6 +8,7 @@ package volvocars.blockchain;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -64,6 +65,13 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private Button startButton;
     private Button pauseButton;
     
+    private Hyperlink headerInfo = new Hyperlink("Genesis not created");
+    private Hyperlink nodeInfo1  = new Hyperlink("-------------------");
+    private Hyperlink nodeInfo2  = new Hyperlink("-------------------");
+    private Hyperlink nodeInfo3  = new Hyperlink("-------------------");        
+    
+    static int runningTime = 0;
+     
     @Override
     public void start(Stage primaryStage) {
         
@@ -130,6 +138,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                                     blockChainNetwork.invalidateXY(width, height);
                                     drawNetwork(temp_canvas);
                                     wrapperPane.getChildren().add(0,temp_canvas);
+                                    System.out.println("drawing");
                                     
                             }
                         });   
@@ -141,6 +150,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                 timer.schedule(task, delayTime);
             }
         };
+        
         
         primaryStage.widthProperty().addListener(listener);
         primaryStage.heightProperty().addListener(listener);
@@ -218,9 +228,30 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         pauseButton.setOnAction((event) -> {
             blockChainNetwork.stopSimulation();
         });
+        
+      
+        // game loop, repaing the graph evry 40ms 
+        new AnimationTimer() {
+            public void handle(long currentNanoTime) {
+                runningTime++;
+                if (runningTime % 3 == 0){
+                    draw(wrapperPane);
+                }
+            }
+        }.start();
 
     }
 
+    private void draw(StackPane wrapperPane){
+        wrapperPane.getChildren().remove(0);
+        final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
+               
+        Bounds   innerBounds = wrapperPane.getBoundsInParent();
+        drawNetwork(temp_canvas);
+        canvas = temp_canvas; 
+        
+        wrapperPane.getChildren().add(0,temp_canvas);
+    }
     
    public VBox addVBox()
 
@@ -240,10 +271,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         vbox.getChildren().add(pauseButton);
         
         Hyperlink options[] = new Hyperlink[]{
-            new Hyperlink("Transactions"),
-            new Hyperlink("Ledger"),
-            new Hyperlink("ICO"),
-            new Hyperlink("Genesis block")};
+            headerInfo,
+            nodeInfo1,
+            nodeInfo2,
+            nodeInfo3};
 
         for (int i = 0; i < 4; i++) {
             VBox.setMargin(options[i], new Insets(0, 0, 0, 8));
@@ -274,9 +305,29 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     }
     
     private void setFromPos(MouseEvent event) {
+        
         this.from_x = event.getX();
         this.from_y = event.getY();
         dragNode = blockChainNetwork.findNodeFromXYPos((int)from_x, (int)from_y);
+        
+        showNodeInfo(dragNode);
+    }
+    
+    private void showNodeInfo(BlockChainNode node){
+        if (node != null){
+            if (node.isForger()){
+                    headerInfo.setText("Validator");
+                    nodeInfo1.setText(new String("Id: " + node.index));
+                    nodeInfo2.setText("-------");
+                    nodeInfo3.setText("-------");
+                }
+            else{
+                    headerInfo.setText("Vehicle wallet");
+                    nodeInfo1.setText(new String("Id: " + node.index));
+                    nodeInfo2.setText(new String("Eco tokens: " + Math.rint(node.getWallet().getNapWealth())));
+                    nodeInfo3.setText(new String("Odometer: " + node.getOdometer() + " km"));
+           }
+        }   
     }
 
     private void setToPos(MouseEvent event,Bounds currentBounds) {
@@ -318,6 +369,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     
     private int getMoveY(int y,int minY,int maxY){
         return Math.min(Math.max(minY + 40,y),maxY - 40);
+    }
+    
+    
+    private void animateTask(){
+        
     }
 
 }
