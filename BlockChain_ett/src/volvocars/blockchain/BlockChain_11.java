@@ -36,6 +36,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 //import jfxtras.labs.scene.control.gauge.Content;
@@ -53,6 +54,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private int height = 800;
     private int width = 1000;
     
+    private long daycalc = 0;
+    private long daycalcspan = 0;
+    
     // Keep track of mouse pointer while dragging
     private double  from_x = 0;
     private double  from_y = 0;
@@ -68,7 +72,8 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private Hyperlink headerInfo = new Hyperlink("Genesis not created");
     private Hyperlink nodeInfo1  = new Hyperlink("-------------------");
     private Hyperlink nodeInfo2  = new Hyperlink("-------------------");
-    private Hyperlink nodeInfo3  = new Hyperlink("-------------------");        
+    private Hyperlink nodeInfo3  = new Hyperlink("-------------------");  
+    private Hyperlink blockInfo =  new Hyperlink("Blockheight is 0 ");
     
     static int runningTime = 0;
      
@@ -97,9 +102,11 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         wrapperPane.setMinSize(500,500);
         borderPane.setCenter(wrapperPane);
        
-        borderPane.setLeft(addVBox());
+        borderPane.setLeft(addVBox_2());
         borderPane.setRight(addVBox());
+        
         bottomPane.getChildren().add(getBottomNode());
+        
         borderPane.setBottom(bottomPane);
         
         
@@ -222,6 +229,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         });
         
         startButton.setOnAction((event) -> {
+           daycalc = System.currentTimeMillis();
            blockChainNetwork.startSimulation();
         });
         
@@ -230,19 +238,29 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         });
         
       
-        // game loop, repaing the graph evry 40ms 
+        // game loop, repanting the graph every 40ms 
         new AnimationTimer() {
             public void handle(long currentNanoTime) {
                 runningTime++;
                 if (runningTime % 3 == 0){
-                    draw(wrapperPane);
+                    blockInfo.setText(new String("Blockheight is " + BlockChainNetwork.blockHeight));
+                    draw(wrapperPane,bottomPane);
                 }
             }
         }.start();
 
     }
+    
+    private long getDayCalc(){
+        if (daycalc == 0)
+            return daycalc;
+        long timepast = System.currentTimeMillis();
+        long day = (timepast - daycalc)/1000;
+        System.out.println(day);
+        return day;
+    }
 
-    private void draw(StackPane wrapperPane){
+    private void draw(StackPane wrapperPane,StackPane bottomPane){
         wrapperPane.getChildren().remove(0);
         final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
                
@@ -251,6 +269,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         canvas = temp_canvas; 
         
         wrapperPane.getChildren().add(0,temp_canvas);
+        
+        // change the day text
+        bottomPane.getChildren().remove(0);
+        bottomPane.getChildren().add(0,getBottomNode());
     }
     
    public VBox addVBox()
@@ -284,7 +306,31 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         return vbox;
     }
   
-    private synchronized void drawNetwork(Canvas canvas) {
+   public VBox addVBox_2(){
+        VBox vbox_2 = new VBox();
+        vbox_2.setPadding(new Insets(10));
+        vbox_2.setSpacing(8);
+
+        Text title = new Text("NAP BlockChain");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        vbox_2.getChildren().add(title);
+
+        
+       
+        Hyperlink options[] = new Hyperlink[]{
+            blockInfo
+        };
+
+       
+       VBox.setMargin(options[0], new Insets(0, 0, 0, 8));
+       vbox_2.getChildren().add(options[0]);
+       
+
+        return vbox_2;
+   }
+    
+   
+   private synchronized void drawNetwork(Canvas canvas) {
         // get the context
         gc = canvas.getGraphicsContext2D();
         // lets go through the nodes and be notfied for each node.
@@ -314,6 +360,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     }
     
     private void showNodeInfo(BlockChainNode node){
+        
         if (node != null){
             if (node.isForger()){
                     headerInfo.setText("Validator");
@@ -357,9 +404,12 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     }
     
     private Node getBottomNode(){
+        
         Canvas c = new Canvas(500,100);
         gc = c.getGraphicsContext2D();
-        gc.strokeText(" Here we will have a bottom transaction ticker... ",200,50 );
+        gc.setFont(Font.font("Verdana", FontPosture.ITALIC, 20));
+        gc.strokeText("Day " + getDayCalc(),200,50 );
+        
         return c;
     }
     

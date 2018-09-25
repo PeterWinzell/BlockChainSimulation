@@ -33,10 +33,11 @@ public class Block {
 	public Block(String previousHash) {
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
+                 blockId = BlockChainNetwork.blockHeight;
 	}
 	
 	//Calculate new hash based on blocks contents
-	public String calculateHash() {
+	private String calculateHash() {
             
             if (previousHash.equals('0')){
                 merkleRoot = "NO TRANSACTIONS IN GENESISBLOCK";
@@ -80,10 +81,16 @@ public class Block {
             
             try {
                 
-                fileWriter = new FileWriter("napblockchain.bl");
+                fileWriter = BlockChainNetwork.getFileWriter();
+                
+                fileWriter.write("****************************************\n");
                 fileWriter.write("Block id: " + blockId +"\n");
+                fileWriter.write("Prev Hash:" + this.previousHash + "\n");
                 fileWriter.write("Hash: " + hash + "\n");  
-                fileWriter.write("MerkleRoot: " + merkleRoot);
+                fileWriter.write("MerkleRoot: " + merkleRoot + "\n");
+                fileWriter.write("****************************************\n");
+                
+                fileWriter.flush();
                 
             } catch (IOException ex) {
                 Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);

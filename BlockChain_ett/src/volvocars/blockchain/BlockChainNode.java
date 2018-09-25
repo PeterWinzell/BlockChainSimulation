@@ -27,7 +27,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     private MemoryPool memPool;
     private boolean isForger = false;
     private List<BlockChainNode> forgerS;
-    private ArrayList<Block> blockChain;
+    private ArrayList<Block> blockChain = new ArrayList();
     
     private boolean isedge = false;
     
@@ -54,10 +54,11 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     }
     
     private void addGenesisBlock(){
-        if (isForger()){
+            
             Block block = Block.getGenesisBlock();
+            block.mineBlock(0);
             blockChain.add(0,block);
-        }
+        
     }
     
     public void setEdgeMatrixIndex(int i) {
@@ -118,7 +119,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     }
     
     public double getSize(){
-        return minsize + Math.log(wallet.getNapWealth());
+        return minsize + 2*Math.log(wallet.getNapWealth() + odometersetting);
     }
 
     private boolean stopped = false;
@@ -132,19 +133,15 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
                 TransactionMessage transactionMessage = null;
                 if (Math.random() < .5){
                 
+                    System.out.println(" transaction added to memory pool" + this.index);
+                    
                     Transaction transaction = getTransaction(Transaction_type.ODOMETER);
+                    odometersetting += ((OdometerTransaction)transaction).value;
                     transactionMessage = new TransactionMessage();
                     transactionMessage.setTransaction(transaction);
-                    memPool.addTransaction(transactionMessage);
-                
-                //message = new Message(this,null,Transaction_type.BUY,new Nap(10));
-                //wallet.addNap(nap);
+                    
+                    ((BroadCastListener)listener).MessageNotification(transactionMessage);
                 }
-                else{
-                //message = new Message(this,null,Transaction_type.SELL,new Nap(10));
-                //wallet.deleteNaps(nap);
-                }
-                ((BroadCastListener)listener).MessageNotification(transactionMessage);
             }    
             try {
                 Thread.sleep(1000);
@@ -158,7 +155,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     
     private Transaction getTransaction(Transaction_type type){
         if( type == Transaction_type.ODOMETER)
-            return new OdometerTransaction(this,this,Math.rint(Math.random() * 100));
+            return new OdometerTransaction(this,this,Math.rint(Math.random() * 200));
         else
             return new WalletTransaction(this,this,Math.rint(Math.random() * 50));
     }
@@ -169,21 +166,22 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
 
     @Override
     public void receiveMessage(M message) {
-        if (isForger()){
-            memPool.addTransaction((TransactionMessage) message);
-            System.out.println(" mess recieved");
-            if (memPool.timeToForge() && findMe()){
-                System.out.println(this.index + " is forging...");
-                addNewBlock(createNewBlock());
-                
-            }
-        }    
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        synchronized(this){
+            if (isForger()){
+                memPool.addTransaction((TransactionMessage) message);
+                System.out.println(" mess recieved " + this.index );
+                if (memPool.timeToForge() && findMe()){
+                    System.out.println(this.index + " is forging...");
+                    addNewBlock(createNewBlock());
+
+                }
+            }   
+        }
     }
         
     
     private boolean findMe(){
-        int forgerIndex = (BlockChainNetwork.blockHeight+1) % forgerS.size();
+        int forgerIndex = BlockChainNetwork.blockHeight % forgerS.size();
         return (forgerS.get(forgerIndex) == this);
     }
     
@@ -197,7 +195,8 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     
     public void setForger(){
         isForger = true;
-        forgerS.add(this);
+        if (!forgerS.contains(this))
+            forgerS.add(this);
     }
     
     
@@ -211,34 +210,45 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         
         double voting = (double)votes/(double)forgerS.size();
         // 2/3 majorioty vote
-        if (voting > 0.66667){
-            // only keep two in chain, print the others on file.
+        if (voting >= 0.66667){
+            System.out.println("great success we have a majority vote on the block ");
+            // only keep two in chain, print the one going out.
+            Block printNode = this.addAndPrint(b);
+            BlockChainNetwork.blockHeight++;
             for(BlockChainNode forger: forgerS){
-                forger.addAndPrint(b); // send message across forgers and add to self
-                forger.removeTransactions(memPool);
-                memPool.clearAll(); // do this last
+                if (forger != this){
+                    forger.addAndPrint(b); // send message across forgers and add to self
+                    forger.removeTransactions(memPool);
+                }    
             }
-            
+            memPool.clearAll();
+            if (printNode != null){
+                printNode.print();  
+            } 
         }
             
     }
     
-    public void addAndPrint(Block b){
+    public Block addAndPrint(Block b){
         if (blockChain.size() >= 2){
                 Block prevNode = blockChain.get(1);
                 Block printNode = blockChain.get(0);
                 blockChain.clear();
                 blockChain.add(0,prevNode);
                 blockChain.add(1,b);
-                printNode.print();
-            }
-            else{
+                // increase blockheight
+                return printNode; 
+        }       
+        else{
                 blockChain.add(1,b);
-            }
+        }
+        return null;
     }
     
     private Block createNewBlock(){
-        return memPool.getNewBlockFromTransactions(blockChain.get(blockChain.size() - 1));   
+        Block b = memPool.getNewBlockFromTransactions(blockChain.get(blockChain.size() - 1));
+        b.mineBlock(0);
+        return b;
     }
     
     public boolean voteOnBlock(Block block){
@@ -248,7 +258,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
 
     private void removeTransactions(MemoryPool memPool) {
         if (memPool != this.memPool){
-            memPool.clearAll(memPool);
+            this.memPool.clearAll(memPool);
         }
     }
 }

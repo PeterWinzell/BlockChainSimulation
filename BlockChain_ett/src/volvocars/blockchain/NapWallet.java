@@ -25,8 +25,8 @@ public class NapWallet {
         wallet = new ArrayList();
         wallet.add(initialNap);
         
-        //KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-       // keypair = keyGen.genKeyPair();
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keypair = keyGen.genKeyPair();
     }
     
     public void addNaps(double napstobeadded){

@@ -20,4 +20,8 @@ public class TransactionMessage extends MessageBase{
     public void setTransaction(Transaction transaction){
         this.transaction = transaction;
     }
+    
+    public Transaction getTransation(){
+        return transaction;
+    }
 }

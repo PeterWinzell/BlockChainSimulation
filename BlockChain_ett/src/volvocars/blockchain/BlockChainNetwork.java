@@ -6,13 +6,22 @@
 package volvocars.blockchain;
 
 import java.awt.Point;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -30,6 +39,7 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
     private static final double forgerProb = 0.1;
     
     private static float minimumTransaction = 0.1f;
+    private static FileWriter fileWriter;
 
     public static float getMinimumTransaction() {
         return minimumTransaction;
@@ -62,8 +72,10 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
             BlockChainNode bNode = new BlockChainNode(forgers,i);
             bNode.addBroadCastListener(this);
             nodes.add(bNode);
-            edgeMatrix[i][(i+1) % networkNodes] = false;    
+            edgeMatrix[i][(i+1) % networkNodes] = false;
+            
         }    
+        blockHeight++;
     }
     
     
@@ -193,10 +205,10 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
     @Override
     public void MessageNotification(M message) {
         synchronized(this){
-        TransactionMessage mess = (TransactionMessage)message;
-        for (BroadCastReceiver listener : mempoolListeners){
-            listener.receiveMessage(mess);
-        }   
+            TransactionMessage mess = (TransactionMessage)message;
+            for (BroadCastReceiver listener : mempoolListeners){
+                listener.receiveMessage(mess);
+            }   
         }
     }
 
@@ -249,13 +261,42 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
        int x = aNode.getX();
        int y = aNode.getY();
        
-       double radious = aNode.getSize();
+       double radius = aNode.getSize();
        if (aNode.isForger())
            gc.setFill(Color.CRIMSON);
-        else
+       else{
             gc.setFill(Color.YELLOW);
+            drawNodeText(gc,aNode,x,y,radius);
+       }     
        
-       gc.fillOval(x,y,radious,radious); 
+       gc.fillOval(x,y,radius,radius); 
+    }
+    
+    private void drawNodeText(GraphicsContext gc,BlockChainNode aNode,int x,int y,double radius){
+       Font f = gc.getFont();
+       String odometerString = Double.toString(aNode.getOdometer());
+       Bounds textBounds = reportSize(odometerString,f);
+       
+       int fontx = (int)(x - (textBounds.getWidth() - radius) / 2);
+       int fonty =(int )(y + textBounds.getHeight() + radius);
+       
+       gc.fillText(odometerString,fontx,fonty);
+    }
+    
+    private Bounds reportSize(String s, Font myFont) {
+        Text text = new Text(s);
+        text.setFont(myFont);
+        Bounds tb = text.getBoundsInLocal();
+        Rectangle stencil = new Rectangle(
+            tb.getMinX(), tb.getMinY(), tb.getWidth(), tb.getHeight()
+        );
+
+        Shape intersection = Shape.intersect(text, stencil);
+
+       Bounds ib = intersection.getBoundsInLocal();
+        System.out.println(
+            "Text size: " + ib.getWidth() + ", " + ib.getHeight());
+       return ib; 
     }
     
     private void drawEdge(GraphicsContext gc,int node1,int node2){
@@ -273,8 +314,12 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
         
         gc.beginPath();
         gc.setStroke(edgeColor);
-        gc.moveTo(aNode.getX() + 5, aNode.getY() + 5);
-        gc.lineTo(anotherNode.getX() + 5,anotherNode.getY() + 5);
+        
+        int radius_1 = (int)(aNode.getSize() / 2);
+        gc.moveTo(aNode.getX() + radius_1, aNode.getY() + radius_1);
+        
+        int radius_2= (int)(anotherNode.getSize() / 2);
+        gc.lineTo(anotherNode.getX() + radius_2,anotherNode.getY() + radius_2);
         gc.stroke();
          
     }
@@ -304,9 +349,10 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
     
     public boolean inCircle(int mousex,int mousey,int nodex,int nodey,double diameter){
         
-        int dx = Math.abs(mousex-(nodex+5));
-        int dy = Math.abs(mousey-(nodey+5));
         double radius = diameter / 2;
+        int dx = Math.abs(mousex-(nodex+ (int)radius));
+        int dy = Math.abs(mousey-(nodey+(int)radius));
+        
         return ( dx*dx + dy*dy <= (radius*radius) ); // pytagoras...
 
     }
@@ -356,6 +402,37 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    
+    public static FileWriter getFileWriter(){
+        if (fileWriter == null){
+            try {
+                fileWriter = new FileWriter("napblockchain.bl");
+            } catch (IOException ex) {
+                Logger.getLogger(BlockChainNetwork.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return fileWriter;
+    }
+    
+    private BlockChainNode currentDisplayVehicleNode = null;
+    private BlockChainNode currentForger = null; 
+    
+    /*** used to highlight changes **/
+    public void setCurrentTransactionNode(BlockChainNode node){
+        synchronized(this){
+            currentDisplayVehicleNode = node;
+        }
+    }
+    
+    public void setCurrentForgerNode(BlockChainNode node){
+        synchronized(this){
+            currentForger = node;
+        }
+    }
+    
+    private void getCurrentForgerColor(){
+        
+    }
    
 }
 

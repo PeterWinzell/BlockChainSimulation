@@ -61,12 +61,13 @@ public class MemoryPool implements TransactionMemoryPool
     }
 
     Block getNewBlockFromTransactions(Block prevBlock) {
+        
         Block b = new Block(prevBlock.hash);
         
         for(TransactionMessage transMess: list){
             b.addTransaction(transMess.getTransation());
         }
-        b.calculateHash();
+        //b.calculateHash();
         
         return b;
     }

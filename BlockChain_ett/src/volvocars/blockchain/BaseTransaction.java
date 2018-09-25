@@ -19,7 +19,7 @@ public abstract class BaseTransaction  {
 
     
     
-    protected String transactionId; //Contains a hash of transaction*
+    protected static String transactionId; //Contains a hash of transaction*
     
     protected PublicKey sender; //Senders address/public key.
     protected PublicKey reciepient; //Recipients address/public key.
@@ -40,6 +40,8 @@ public abstract class BaseTransaction  {
                 sender = senderNode.getWallet().getPublicKey();
                 reciepient = senderNode.getWallet().getPublicKey();
 		this.value = value;
+                sequence++;
+                transactionId = Integer.toString(sequence);
 		
       }
 	
@@ -60,6 +62,7 @@ public abstract class BaseTransaction  {
 				Double.toString(value) + sequence
 				);
 	}
+        
         
         public String getTransactionId() {
             return transactionId;
