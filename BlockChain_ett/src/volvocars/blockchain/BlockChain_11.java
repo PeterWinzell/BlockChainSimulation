@@ -62,6 +62,10 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private double  from_y = 0;
     private double  to_x = 0;
     private double  to_y = 0;
+    
+    private double  startDragX = 0;
+    private double  startDragY = 0;
+    
     private int     line_no = 1;
     
     private GraphicsContext gc;
@@ -185,7 +189,13 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         blockChainNetwork.initNetwork(width, height);
         blockChainNetwork.addTraverseListener(this);
         
-        wrapperPane.setOnMousePressed((event) -> this.setFromPos(event));       
+        wrapperPane.setOnMousePressed((event) -> 
+        {    
+            this.setFromPos(event);
+             startDragX = this.to_x;
+             startDragY = this.to_y;
+        });       
+        
         wrapperPane.setOnMouseDragged((event) -> {
             
             //final GraphicsContext gc = temp_canvas.getGraphicsContext2D();
@@ -194,12 +204,26 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                wrapperPane.getChildren().remove(0);
                final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
                
-               Bounds   innerBounds = wrapperPane.getBoundsInParent();
+               Bounds innerBounds = wrapperPane.getBoundsInParent();
               
                
                this.setToPos(event,innerBounds);
-               dragNode.setX((int)this.to_x);
-               dragNode.setY((int)this.to_y);
+               
+               double deltax = this.to_x - startDragX;
+               double deltay = this.to_y - startDragY;
+               
+               System.out.println(" node x " + dragNode.getX() );
+               System.out.println(" deltax " + deltax);
+               
+               dragNode.setX(dragNode.getX() + (int)deltax);
+               dragNode.setY(dragNode.getY() + (int)deltay);
+               
+               startDragX = this.to_x;
+               startDragY = this.to_y;
+               
+               //dragNode.setX((int)this.to_x - deltax);
+               //dragNode.setY((int)this.to_y - deltay);
+               
                drawNetwork(temp_canvas);
                canvas = temp_canvas;
                
@@ -216,14 +240,19 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                 final Canvas temp_canvas = new Canvas(wrapperPane.getWidth(), wrapperPane.getHeight()); 
                 
                 Bounds innerBounds = wrapperPane.getBoundsInParent();
-                this.setToPos(event,innerBounds);
                 
-                dragNode.setX((int)this.to_x);
-                dragNode.setY((int)this.to_y);
-                drawNetwork(temp_canvas);
-                canvas = temp_canvas;
+               this.setToPos(event,innerBounds);
                 
-                wrapperPane.getChildren().add(0,temp_canvas);
+               double deltax = this.to_x - startDragX;
+               double deltay = this.to_y - startDragY;
+               
+               dragNode.setX(dragNode.getX() + (int)deltax);
+               dragNode.setY(dragNode.getY() + (int)deltay);
+               
+               drawNetwork(temp_canvas);
+               canvas = temp_canvas;
+                
+               wrapperPane.getChildren().add(0,temp_canvas);
             }    
             
         });
@@ -352,8 +381,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     
     private void setFromPos(MouseEvent event) {
         
-        this.from_x = event.getX();
-        this.from_y = event.getY();
+        this.to_x = this.from_x = event.getX();
+        this.to_y = this.from_y = event.getY();
+        
         dragNode = blockChainNetwork.findNodeFromXYPos((int)from_x, (int)from_y);
         
         showNodeInfo(dragNode);
@@ -425,5 +455,15 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private void animateTask(){
         
     }
+    
+    private int getoffSetX(int cx,int tox){
+        return Math.abs(tox - cx);
+        
+    }
+    
+    private int getoffSetY(int cy,int toy){
+        return Math.abs(toy - cy);     
+    }
+    
 
 }

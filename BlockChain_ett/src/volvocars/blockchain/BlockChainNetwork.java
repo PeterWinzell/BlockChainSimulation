@@ -294,8 +294,7 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
         Shape intersection = Shape.intersect(text, stencil);
 
        Bounds ib = intersection.getBoundsInLocal();
-        System.out.println(
-            "Text size: " + ib.getWidth() + ", " + ib.getHeight());
+       // System.out.println( "Text size: " + ib.getWidth() + ", " + ib.getHeight());
        return ib; 
     }
     

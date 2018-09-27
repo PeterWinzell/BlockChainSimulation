@@ -119,7 +119,11 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     }
     
     public double getSize(){
-        return minsize + 2*Math.log(wallet.getNapWealth() + odometersetting);
+        if (isForger())
+            return 30;
+            
+        return Math.min(odometersetting/10, 80) + Math.log(wallet.getNapWealth() + odometersetting);
+        //return minsize + 2*Math.log(wallet.getNapWealth() + odometersetting);
     }
 
     private boolean stopped = false;
