@@ -55,7 +55,6 @@ public class MemoryPool implements TransactionMemoryPool
     
     public boolean timeToForge(){
         synchronized(this){
-            System.out.println(" time to forge " + list.size());
             return (list.size() >= 20);
         }    
     }

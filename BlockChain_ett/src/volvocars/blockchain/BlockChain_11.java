@@ -213,8 +213,6 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
                double deltax = this.to_x - startDragX;
                double deltay = this.to_y - startDragY;
                
-               System.out.println(" node x " + dragNode.getX() );
-               System.out.println(" deltax " + deltax);
                
                dragNode.setX(dragNode.getX() + (int)deltax);
                dragNode.setY(dragNode.getY() + (int)deltay);
@@ -298,7 +296,6 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         if (simulationIsOn()){
             timepast = System.currentTimeMillis();
             long day = (timepast - daycalc)/1000;
-            System.out.println(day);
             return day;
         }    
         
@@ -387,8 +384,6 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String value = System.getProperty("trans_print");
-        System.out.println(value);
         launch(args);
     }
 

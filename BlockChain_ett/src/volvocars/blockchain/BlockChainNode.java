@@ -156,7 +156,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
             }
                 
         }
-        System.out.println(" Thread is done " + index);
+        // System.out.println(" Thread is done " + index);
     }
     
     private Transaction getTransaction(Transaction_type type){

@@ -29,4 +29,9 @@ public class OdometerTransaction extends BaseTransaction implements Transaction{
 				Double.toString(value) + sequence
 				);
     }
+    
+    @Override
+    public String toString(){
+        return super.toString() + " km ";
+    }
 }

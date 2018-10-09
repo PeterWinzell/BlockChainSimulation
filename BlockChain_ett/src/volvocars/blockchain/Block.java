@@ -73,7 +73,6 @@ public class Block {
 		}
 
 		transactions.add(transaction);
-		System.out.println("Transaction Successfully added to Block");
 		return true;
 	}
         
@@ -83,18 +82,29 @@ public class Block {
                 
                 fileWriter = BlockChainNetwork.getFileWriter();
                 
-                fileWriter.write("****************************************\n");
+                fileWriter.write("********************************************************************************\n");
                 fileWriter.write("Block id: " + blockId +"\n");
                 fileWriter.write("Prev Hash:" + this.previousHash + "\n");
                 fileWriter.write("Hash: " + hash + "\n");  
                 fileWriter.write("MerkleRoot: " + merkleRoot + "\n");
-                fileWriter.write("****************************************\n");
+                fileWriter.write(getTransactionsStrings()+"\n");
+                fileWriter.write("********************************************************************************\n");
                 
                 fileWriter.flush();
                 
             } catch (IOException ex) {
                 Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        
+        private String getTransactionsStrings(){
+            
+            StringBuilder buildStr = new StringBuilder("Transactions: [");
+            
+            for (Transaction trans: transactions){
+                buildStr.append(trans.toString() + ",");
+            }
+            return buildStr.replace(buildStr.length()-1, buildStr.length(), "]").toString();
         }
 	
         // after the voting is done
@@ -120,8 +130,6 @@ public class Block {
 				Integer.toString(nonce) + 
 				mrkRoot
 				);
-            
-            System.out.println(valHash + " == " + hash);
             
             return valHash.equals(hash);
         }

@@ -67,4 +67,9 @@ public abstract class BaseTransaction  {
         public String getTransactionId() {
             return transactionId;
         }
+        
+        @Override
+        public String toString(){
+            return new String(transactionId + ":" + value);
+        }
 }
