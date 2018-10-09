@@ -6,4 +6,3 @@ BlockChain Simulation(s) to explore blockchain algorithms. A consortium simulate
     
 The code is written using Java 10 SDK and Apache Netbeans 9.0 IDE and the visualization is JavaFX based.
 
-Peter Winzell
