@@ -236,7 +236,6 @@ public class BlockChainNetwork<M,L> implements Runnable, BroadCastListener<M,L> 
 
     public void notifyTraverseListeners(int index,int previndex){
         for (int j = 0; j < travlisteners.size(); j++){
-            System.out.println(index + " " + previndex);
             travlisteners.get(j).apply(nodes.get(index));
         }
     }

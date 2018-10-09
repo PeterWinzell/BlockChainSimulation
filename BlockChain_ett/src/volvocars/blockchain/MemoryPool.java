@@ -85,4 +85,8 @@ public class MemoryPool implements TransactionMemoryPool
             }
         }
     }
+    
+    public ArrayList getList(){
+        return (ArrayList) list;
+    }
 }

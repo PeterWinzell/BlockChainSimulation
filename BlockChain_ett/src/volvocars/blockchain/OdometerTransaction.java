@@ -11,7 +11,6 @@ package volvocars.blockchain;
  */
 public class OdometerTransaction extends BaseTransaction implements Transaction{
 
-    private static int sequence = 0;
     
     
     public OdometerTransaction(BlockChainNode from, BlockChainNode to, double value){
@@ -20,7 +19,7 @@ public class OdometerTransaction extends BaseTransaction implements Transaction{
     
     @Override
     public boolean processTransaction() {
-        return true;
+        return true; // for an odometer we really dont have anything to process.
     }
     
     public String calulateHash() {

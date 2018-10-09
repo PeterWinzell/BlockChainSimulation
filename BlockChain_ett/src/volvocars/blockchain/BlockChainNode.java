@@ -7,6 +7,7 @@ package volvocars.blockchain;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +29,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     private boolean isForger = false;
     private List<BlockChainNode> forgerS;
     private ArrayList<Block> blockChain = new ArrayList();
+    private List<Integer> kmList =  Arrays.asList(200,100,50,10,5);
     
     private boolean isedge = false;
     
@@ -122,7 +124,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         if (isForger())
             return 30;
             
-        return Math.min(odometersetting/10, 80) + Math.log(wallet.getNapWealth() + odometersetting);
+        return Math.min(odometersetting/10, 80) + Math.log(Math.log(wallet.getNapWealth() + odometersetting/4));
         //return minsize + 2*Math.log(wallet.getNapWealth() + odometersetting);
     }
 
@@ -136,13 +138,13 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
             if (!isForger()){
                 TransactionMessage transactionMessage = null;
                 if (Math.random() < .5){
-                
-                    System.out.println(" transaction added to memory pool" + this.index);
                     
                     Transaction transaction = getTransaction(Transaction_type.ODOMETER);
                     odometersetting += ((OdometerTransaction)transaction).value;
+                    
                     transactionMessage = new TransactionMessage();
                     transactionMessage.setTransaction(transaction);
+                    
                     
                     ((BroadCastListener)listener).MessageNotification(transactionMessage);
                 }
@@ -159,7 +161,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
     
     private Transaction getTransaction(Transaction_type type){
         if( type == Transaction_type.ODOMETER)
-            return new OdometerTransaction(this,this,Math.rint(Math.random() * 200));
+            return new OdometerTransaction(this,this,Math.rint(Math.random() * kmList.get(index % 5)));
         else
             return new WalletTransaction(this,this,Math.rint(Math.random() * 50));
     }
@@ -173,9 +175,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         synchronized(this){
             if (isForger()){
                 memPool.addTransaction((TransactionMessage) message);
-                System.out.println(" mess recieved " + this.index );
                 if (memPool.timeToForge() && findMe()){
-                    System.out.println(this.index + " is forging...");
                     addNewBlock(createNewBlock());
 
                 }
@@ -215,7 +215,6 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         double voting = (double)votes/(double)forgerS.size();
         // 2/3 majorioty vote
         if (voting >= 0.66667){
-            System.out.println("great success we have a majority vote on the block ");
             // only keep two in chain, print the one going out.
             Block printNode = this.addAndPrint(b);
             BlockChainNetwork.blockHeight++;
@@ -255,9 +254,10 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         return b;
     }
     
+    
     public boolean voteOnBlock(Block block){
         // validate block here and if ok vote yes.
-        return true;
+        return block.validate();
     }
 
     private void removeTransactions(MemoryPool memPool) {

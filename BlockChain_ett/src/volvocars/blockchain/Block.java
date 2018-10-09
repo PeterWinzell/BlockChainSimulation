@@ -108,5 +108,22 @@ public class Block {
             }
             return genesisBlock;
         }
+        
+        public boolean validate(){
+           
+            // calculate the block hash and compare to actual hash.
+            
+            String mrkRoot = StringUtil.getMerkleRoot(transactions);
+            String valHash = StringUtil.applySha256( 
+				previousHash +
+				Long.toString(timeStamp) +
+				Integer.toString(nonce) + 
+				mrkRoot
+				);
+            
+            System.out.println(valHash + " == " + hash);
+            
+            return valHash.equals(hash);
+        }
 }
 

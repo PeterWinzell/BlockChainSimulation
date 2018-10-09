@@ -192,8 +192,9 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         wrapperPane.setOnMousePressed((event) -> 
         {    
             this.setFromPos(event);
-             startDragX = this.to_x;
-             startDragY = this.to_y;
+            
+            startDragX = this.to_x;
+            startDragY = this.to_y;
         });       
         
         wrapperPane.setOnMouseDragged((event) -> {
@@ -260,10 +261,12 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         startButton.setOnAction((event) -> {
            daycalc = System.currentTimeMillis();
            blockChainNetwork.startSimulation();
+           simulating = true;
         });
         
         pauseButton.setOnAction((event) -> {
             blockChainNetwork.stopSimulation();
+            simulating = false;
         });
         
       
@@ -280,13 +283,26 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
 
     }
     
+    
+    private boolean simulating = false;
+    
+    private boolean simulationIsOn(){
+        return simulating;
+    }
+    
     private long getDayCalc(){
         if (daycalc == 0)
             return daycalc;
-        long timepast = System.currentTimeMillis();
-        long day = (timepast - daycalc)/1000;
-        System.out.println(day);
-        return day;
+        long timepast = 0;
+        
+        if (simulationIsOn()){
+            timepast = System.currentTimeMillis();
+            long day = (timepast - daycalc)/1000;
+            System.out.println(day);
+            return day;
+        }    
+        
+        return 0;
     }
 
     private void draw(StackPane wrapperPane,StackPane bottomPane){
@@ -371,12 +387,14 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        String value = System.getProperty("trans_print");
+        System.out.println(value);
         launch(args);
     }
 
     @Override
     public void apply(BlockChainNode aNode) {
-       
+       // do something 
     }
     
     private void setFromPos(MouseEvent event) {
@@ -452,10 +470,6 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     }
     
     
-    private void animateTask(){
-        
-    }
-    
     private int getoffSetX(int cx,int tox){
         return Math.abs(tox - cx);
         
@@ -464,6 +478,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
     private int getoffSetY(int cy,int toy){
         return Math.abs(toy - cy);     
     }
+    
     
 
 }
