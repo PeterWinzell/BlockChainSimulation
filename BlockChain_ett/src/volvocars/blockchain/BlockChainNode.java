@@ -124,7 +124,7 @@ public class BlockChainNode<M,L> implements  Runnable, BroadCastListener<M,L>,Br
         if (isForger())
             return 30;
             
-        return Math.min(odometersetting/10, 80) + Math.log(Math.log(wallet.getNapWealth() + odometersetting/4));
+        return Math.min(odometersetting/5 + 5, 80) + Math.log(Math.log(wallet.getNapWealth() + odometersetting/4));
         //return minsize + 2*Math.log(wallet.getNapWealth() + odometersetting);
     }
 

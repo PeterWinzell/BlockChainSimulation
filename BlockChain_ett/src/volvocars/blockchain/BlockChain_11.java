@@ -104,6 +104,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
         wrapperPane.setMaxSize(1000,1000);
         wrapperPane.setPrefSize(1000,1000);
         wrapperPane.setMinSize(500,500);
+        
         borderPane.setCenter(wrapperPane);
        
         borderPane.setLeft(addVBox_2());
@@ -162,6 +163,7 @@ public class BlockChain_11 extends Application implements DfsTraverseListener<Bl
             }
         };
         
+       
         
         primaryStage.widthProperty().addListener(listener);
         primaryStage.heightProperty().addListener(listener);
